@@ -1,9 +1,7 @@
-// main.go
 package main
 
-import "fmt"
+import "kasher/cmd"
 
 func main() {
-	fmt.Println("Hello CLI 👋")
+	cmd.Execute()
 }
-
