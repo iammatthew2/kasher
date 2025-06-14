@@ -1,51 +1,55 @@
-/*
-Copyright © 2025 Matthew Villeneuve
-
-*/
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
+
+	"kasher/internal/config"
 
 	"github.com/spf13/cobra"
 )
 
-
-
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:   "kasher",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+func init() {
+	rootCmd.AddCommand(taskCmd)
+	rootCmd.SuggestionsMinimumDistance = 1
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.kasher.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+var rootCmd = &cobra.Command{
+	Use:   "kasher [taskName]",
+	Short: "kasher - shell task runner with caching",
+	Long:  "kasher lets you define, run, and cache named shell tasks.",
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// If a subcommand was called, do nothing here.
+		if cmd.CalledAs() == "config" {
+			return nil
+		}
+		// Run a task by name
+		if len(args) > 0 {
+			cfg, err := config.LoadConfig()
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+			taskName := args[0]
+			task, exists := cfg[taskName]
+			if !exists {
+				return fmt.Errorf("task '%s' not found", taskName)
+			}
+			// TODO: Add caching logic here
+			fmt.Printf("Running: %s\n", task.Command)
+			cmd := exec.Command("sh", "-c", task.Command)
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			cmd.Stdin = os.Stdin
+			return cmd.Run()
+		}
+		return cmd.Help()
+	},
 }
-
-
