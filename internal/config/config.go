@@ -9,9 +9,10 @@ import (
 )
 
 type TaskConfig struct {
-	Command    string `toml:"command"`
-	Expiration string `toml:"expiration"`
-	Notes      string `toml:"notes,omitempty"`
+	Command     string `toml:"command"`
+	Expiration  string `toml:"expiration"`
+	Notes       string `toml:"notes,omitempty"`
+	LastFetched string `toml:"lastFetched,omitempty"`
 }
 
 type KasherConfig map[string]TaskConfig

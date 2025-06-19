@@ -1,34 +1,26 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
+	"time"
 
 	"kasher/internal/config"
 
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(taskCmd)
-	rootCmd.SuggestionsMinimumDistance = 1
-}
-
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-}
-
 var rootCmd = &cobra.Command{
 	Use:   "kasher [taskName]",
 	Short: "kasher - shell task runner with caching",
 	Long:  "kasher lets you define, run, and cache named shell tasks.",
+	Args:  cobra.ArbitraryArgs, // Accept any arguments (task names)
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// If a subcommand was called, do nothing here.
-		if cmd.CalledAs() == "config" {
+		if cmd.CalledAs() == "task" {
 			return nil
 		}
 		// Run a task by name
@@ -40,16 +32,70 @@ var rootCmd = &cobra.Command{
 			taskName := args[0]
 			task, exists := cfg[taskName]
 			if !exists {
-				return fmt.Errorf("task '%s' not found", taskName)
+				fmt.Fprintf(os.Stderr, "Task '%s' not found.\n", taskName)
+				fmt.Fprintln(os.Stderr, "Run 'kasher task list' to see available tasks.")
+				return nil
 			}
-			// TODO: Add caching logic here
+
+			// Check cache validity
+			cacheValid := false
+			if task.LastFetched != "" && task.Expiration != "" {
+				lastFetched, err := time.Parse(time.RFC3339, task.LastFetched)
+				if err == nil {
+					expDur, err := time.ParseDuration(task.Expiration)
+					if err == nil && time.Since(lastFetched) < expDur {
+						cacheValid = true
+					}
+				}
+			}
+
+			if cacheValid {
+				cached, err := config.ReadCache(taskName)
+				if err == nil {
+					fmt.Print(cached)
+					return nil
+				}
+				// If cache read fails, fall through to re-run the command
+			}
+
+			// Prepare to capture and stream output
+			var outBuf, errBuf bytes.Buffer
+			command := exec.Command("sh", "-c", task.Command)
+			command.Stdout = io.MultiWriter(os.Stdout, &outBuf)
+			command.Stderr = io.MultiWriter(os.Stderr, &errBuf)
+			command.Stdin = os.Stdin
+
 			fmt.Printf("Running: %s\n", task.Command)
-			cmd := exec.Command("sh", "-c", task.Command)
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			cmd.Stdin = os.Stdin
-			return cmd.Run()
+			err = command.Run()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error running command: %v\n", err)
+			}
+
+			// Combine output for caching
+			output := outBuf.String() + errBuf.String()
+
+			// Save output to cache file
+			_ = config.WriteCache(taskName, output)
+
+			// Update LastFetched and save config
+			task.LastFetched = time.Now().Format(time.RFC3339)
+			cfg[taskName] = task
+			_ = config.SaveConfig(cfg) // handle error as needed
+
+			return err
 		}
 		return cmd.Help()
 	},
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func init() {
+	rootCmd.AddCommand(taskCmd)
+	rootCmd.SuggestionsMinimumDistance = 2
 }

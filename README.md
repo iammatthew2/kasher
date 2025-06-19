@@ -10,36 +10,20 @@
 - Interactive setup and management using [Cobra](https://github.com/spf13/cobra) and [Survey](https://github.com/AlecAivazis/survey)
 - Commands to set up, update, and delete tasks
 
-## Installation
-
-Clone the repository and build:
-
-```sh
-git clone https://github.com/yourusername/kasher.git
-cd kasher
-go build -o kasher
-```
-
 ## Usage
 
-### Add a Task
 
-```sh
-kasher setup
-```
-Follow the interactive prompts to define a new task.
+### Task actions
 
-### Update or Delete a Task
+kasher task create
+kasher task update
+kasher task delete
+kasher task clearAll
+kasher task list
+kasher task debug
 
-```sh
-kasher update
-kasher delete
-```
-(Commands may be implemented as the project evolves.)
 
-### Run a Task
 
-(Planned feature: run a named task and use cached output if valid.)
 
 ## Configuration
 
@@ -57,6 +41,12 @@ command = "echo 'Hello, world!'"
 cache_duration = "10m"
 ```
 
-## Roadmap
+## Dev
 
-...
+* Ensure [Go](https://go.dev/dl/) is installed (version 1.24 or later)
+* `$ git clone https://github.com/iammatthew2/kasher`
+* `$ cd kasher`
+* `$ go run . <optionsHere>`
+* `$ go run . task create`
+* `$ go run . task list`
+new

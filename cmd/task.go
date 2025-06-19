@@ -2,19 +2,26 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"kasher/internal/config"
 
 	"github.com/spf13/cobra"
 )
 
+var taskCmd = &cobra.Command{
+	Use:   "task",
+	Short: "Manage kasher tasks",
+}
+
 func init() {
 	taskCmd.AddCommand(createCmd)
 	taskCmd.AddCommand(updateCmd)
 	taskCmd.AddCommand(deleteCmd)
-	taskCmd.AddCommand(clearAllCmd)
 	taskCmd.AddCommand(listCmd)
-	taskCmd.AddCommand(debugCmd)
+	taskCmd.AddCommand(clearAllCmd)
+	taskCmd.AddCommand(infoCmd)
 }
 
 // promptForTaskName prompts for a new task name, ensuring it is not empty and not already in use.
@@ -35,23 +42,35 @@ func promptForTaskName(cfg config.KasherConfig, message string) (string, error) 
 	}
 }
 
-var taskCmd = &cobra.Command{
-	Use:   "task",
-	Short: "Manage kasher tasks",
-}
-
-var debugCmd = &cobra.Command{
-	Use:   "debug",
-	Short: "Print the location of the kasher config file",
+var infoCmd = &cobra.Command{
+	Use:   "_info",
+	Short: "Print the location of the kasher config and cache directories",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		path, err := config.GetConfigPath()
+		configPath, err := config.GetConfigPath()
 		if err != nil {
 			return err
 		}
 		fmt.Println("Kasher config file location:")
-		fmt.Println(path)
+		fmt.Println(configPath)
+
+		// Print cache directory
+		cacheDir, err := getCacheDir()
+		if err != nil {
+			return err
+		}
+		fmt.Println("Kasher cache directory:")
+		fmt.Println(cacheDir)
 		return nil
 	},
+}
+
+// getCacheDir returns the kasher cache directory path
+func getCacheDir() (string, error) {
+	dir, err := os.UserCacheDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(dir, "kasher"), nil
 }
 
 var createCmd = &cobra.Command{
@@ -85,9 +104,8 @@ var createCmd = &cobra.Command{
 }
 
 var updateCmd = &cobra.Command{
-	Use:        "update",
-	SuggestFor: []string{"modify", "change", "edit"},
-	Short:      "Update an existing task",
+	Use:   "update",
+	Short: "Update an existing task",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, err := config.LoadConfig()
 		if err != nil {
@@ -155,9 +173,8 @@ var clearAllCmd = &cobra.Command{
 	},
 }
 var listCmd = &cobra.Command{
-	Use:        "list",
-	SuggestFor: []string{"lsit", "lst"},
-	Short:      "List all tasks",
+	Use:   "list",
+	Short: "List all tasks",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		cfg, err := config.LoadConfig()
 		if err != nil {
