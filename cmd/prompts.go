@@ -12,18 +12,22 @@ import (
 // PromptTaskDetails interactively asks the user for task details.
 func PromptTaskDetails(existing *config.TaskConfig) (config.TaskConfig, error) {
 	var task config.TaskConfig
-	// Prompt for command
-	commandPrompt := &survey.Input{Message: "Shell command:", Default: existing.Command}
-	var command string
-	survey.AskOne(commandPrompt, &command, survey.WithValidator(survey.Required))
-	if command == "q" || command == "quit" || command == "exit" || command == "?" || command == "help" {
-		if command == "?" || command == "help" {
-			fmt.Println("Enter the shell command to run for this task. Example: echo 'Hello, world!'")
-			return task, fmt.Errorf("user requested help")
+	// If Command is already set, skip the command prompt
+	if existing.Command != "" {
+		task.Command = existing.Command
+	} else {
+		commandPrompt := &survey.Input{Message: "Shell command:", Default: existing.Command}
+		var command string
+		survey.AskOne(commandPrompt, &command, survey.WithValidator(survey.Required))
+		if command == "q" || command == "quit" || command == "exit" || command == "?" || command == "help" {
+			if command == "?" || command == "help" {
+				fmt.Println("Enter the shell command to run for this task. Example: echo 'Hello, world!'")
+				return task, fmt.Errorf("user requested help")
+			}
+			return task, fmt.Errorf("user exited prompt")
 		}
-		return task, fmt.Errorf("user exited prompt")
+		task.Command = command
 	}
-	task.Command = command
 	// Prompt for expiration with help and validation loop
 	for {
 		var expiration string

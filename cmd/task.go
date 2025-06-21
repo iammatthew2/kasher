@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"kasher/internal/config"
 
@@ -17,6 +18,7 @@ var taskCmd = &cobra.Command{
 
 func init() {
 	taskCmd.AddCommand(createCmd)
+	taskCmd.AddCommand(createForCmd)
 	taskCmd.AddCommand(updateCmd)
 	taskCmd.AddCommand(deleteCmd)
 	taskCmd.AddCommand(listCmd)
@@ -48,8 +50,9 @@ func printVerboseInfo() {
 }
 
 var createCmd = &cobra.Command{
-	Use:   "create",
+	Use:   "create [name]",
 	Short: "Create a new task",
+	Args:  cobra.RangeArgs(0, 1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if verbose {
 			printVerboseInfo()
@@ -59,12 +62,22 @@ var createCmd = &cobra.Command{
 			return err
 		}
 		fmt.Println("** Type '?' for help, 'q' to quit at any prompt **")
-		taskName, err := PromptForTaskName(cfg, "Enter a name for the new task:")
-		if err != nil {
-			return err
-		}
-		if _, exists := cfg[taskName]; exists {
-			return fmt.Errorf("task '%s' already exists", taskName)
+		var taskName string
+		if len(args) > 0 {
+			taskName = args[0]
+			if _, exists := cfg[taskName]; exists {
+				return fmt.Errorf("task '%s' already exists", taskName)
+			}
+			// Optionally, validate/normalize taskName as PromptForTaskName would
+		} else {
+			var err error
+			taskName, err = PromptForTaskName(cfg, "Enter a name for the new task:")
+			if err != nil {
+				return err
+			}
+			if _, exists := cfg[taskName]; exists {
+				return fmt.Errorf("task '%s' already exists", taskName)
+			}
 		}
 		task, err := PromptTaskDetails(&config.TaskConfig{})
 		if err != nil {
@@ -182,6 +195,42 @@ var listCmd = &cobra.Command{
 				fmt.Printf("    Notes: %s\n", task.Notes)
 			}
 		}
+		return nil
+	},
+}
+
+var createForCmd = &cobra.Command{
+	Use:   "createFor <command>",
+	Short: "Create a new task for a given shell command",
+	Args:  cobra.MinimumNArgs(1),
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if verbose {
+			printVerboseInfo()
+		}
+		cfg, err := config.LoadConfig()
+		if err != nil {
+			return err
+		}
+		taskName, err := PromptForTaskName(cfg, "Enter a name for the new task:")
+		if err != nil {
+			return err
+		}
+		if _, exists := cfg[taskName]; exists {
+			return fmt.Errorf("task '%s' already exists", taskName)
+		}
+		// Join all args as the shell command
+		shellCommand := strings.Join(args, " ")
+		task, err := PromptTaskDetails(&config.TaskConfig{Command: shellCommand})
+		if err != nil {
+			return err
+		}
+		if err := cfg.AddTask(taskName, task); err != nil {
+			return err
+		}
+		if err := config.SaveConfig(cfg); err != nil {
+			return err
+		}
+		fmt.Printf("Task '%s' created for command: %s\n", taskName, shellCommand)
 		return nil
 	},
 }
