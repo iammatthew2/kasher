@@ -23,7 +23,7 @@ var rootCmd = &cobra.Command{
 	Long:  "kasher lets you define, run, and cache named shell tasks.",
 	Args:  cobra.ArbitraryArgs, // Accept any arguments (task names)
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// If a subcommand was called, do nothing here.
+		// If a subcommand was called, exit and let subcommand's handler run
 		if cmd.CalledAs() == "task" {
 			return nil
 		}

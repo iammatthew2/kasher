@@ -25,24 +25,6 @@ func init() {
 	taskCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Show extra information")
 }
 
-// promptForTaskName prompts for a new task name, ensuring it is not empty and not already in use.
-func promptForTaskName(cfg config.KasherConfig, message string) (string, error) {
-	for {
-		var name string
-		fmt.Print(message + " ")
-		fmt.Scanln(&name)
-		if name == "" {
-			fmt.Println("Task name cannot be empty.")
-			continue
-		}
-		if _, exists := cfg[name]; exists {
-			fmt.Printf("Task '%s' already exists. Please choose another name.\n", name)
-			continue
-		}
-		return name, nil
-	}
-}
-
 // getCacheDir returns the kasher cache directory path
 func getCacheDir() (string, error) {
 	dir, err := os.UserCacheDir()
@@ -76,7 +58,8 @@ var createCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		taskName, err := promptForTaskName(cfg, "Enter a name for the new task:")
+		fmt.Println("** Type '?' for help, 'q' to quit at any prompt **")
+		taskName, err := PromptForTaskName(cfg, "Enter a name for the new task:")
 		if err != nil {
 			return err
 		}
