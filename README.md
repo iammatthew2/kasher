@@ -49,4 +49,3 @@ cache_duration = "10m"
 * `$ go run . <optionsHere>`
 * `$ go run . task create`
 * `$ go run . task list`
-new

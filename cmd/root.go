@@ -6,12 +6,16 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"kasher/internal/config"
 
 	"github.com/spf13/cobra"
 )
+
+var forceRefresh bool
+var verbose bool
 
 var rootCmd = &cobra.Command{
 	Use:   "kasher [taskName]",
@@ -37,9 +41,22 @@ var rootCmd = &cobra.Command{
 				return nil
 			}
 
-			// Check cache validity
+			if verbose {
+				configPath, err := config.GetConfigPath()
+				if err == nil {
+					fmt.Println("Kasher config file location:")
+					fmt.Println(configPath)
+				}
+				dir, err := os.UserCacheDir()
+				if err == nil {
+					fmt.Println("Kasher cache directory:")
+					fmt.Println(filepath.Join(dir, "kasher"))
+				}
+			}
+
+			// Check cache validity, skip if forceRefresh is set
 			cacheValid := false
-			if task.LastFetched != "" && task.Expiration != "" {
+			if !forceRefresh && task.LastFetched != "" && task.Expiration != "" {
 				lastFetched, err := time.Parse(time.RFC3339, task.LastFetched)
 				if err == nil {
 					expDur, err := time.ParseDuration(task.Expiration)
@@ -98,4 +115,6 @@ func Execute() {
 func init() {
 	rootCmd.AddCommand(taskCmd)
 	rootCmd.SuggestionsMinimumDistance = 2
+	rootCmd.PersistentFlags().BoolVarP(&forceRefresh, "force", "f", false, "Force refresh of cached task output")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Show extra information")
 }

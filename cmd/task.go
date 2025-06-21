@@ -21,7 +21,8 @@ func init() {
 	taskCmd.AddCommand(deleteCmd)
 	taskCmd.AddCommand(listCmd)
 	taskCmd.AddCommand(clearAllCmd)
-	taskCmd.AddCommand(infoCmd)
+
+	taskCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Show extra information")
 }
 
 // promptForTaskName prompts for a new task name, ensuring it is not empty and not already in use.
@@ -42,28 +43,6 @@ func promptForTaskName(cfg config.KasherConfig, message string) (string, error) 
 	}
 }
 
-var infoCmd = &cobra.Command{
-	Use:   "_info",
-	Short: "Print the location of the kasher config and cache directories",
-	RunE: func(cmd *cobra.Command, args []string) error {
-		configPath, err := config.GetConfigPath()
-		if err != nil {
-			return err
-		}
-		fmt.Println("Kasher config file location:")
-		fmt.Println(configPath)
-
-		// Print cache directory
-		cacheDir, err := getCacheDir()
-		if err != nil {
-			return err
-		}
-		fmt.Println("Kasher cache directory:")
-		fmt.Println(cacheDir)
-		return nil
-	},
-}
-
 // getCacheDir returns the kasher cache directory path
 func getCacheDir() (string, error) {
 	dir, err := os.UserCacheDir()
@@ -73,10 +52,26 @@ func getCacheDir() (string, error) {
 	return filepath.Join(dir, "kasher"), nil
 }
 
+func printVerboseInfo() {
+	configPath, err := config.GetConfigPath()
+	if err == nil {
+		fmt.Println("Kasher config file location:")
+		fmt.Println(configPath)
+	}
+	cacheDir, err := getCacheDir()
+	if err == nil {
+		fmt.Println("Kasher cache directory:")
+		fmt.Println(cacheDir)
+	}
+}
+
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Create a new task",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if verbose {
+			printVerboseInfo()
+		}
 		cfg, err := config.LoadConfig()
 		if err != nil {
 			return err
@@ -107,6 +102,9 @@ var updateCmd = &cobra.Command{
 	Use:   "update",
 	Short: "Update an existing task",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if verbose {
+			printVerboseInfo()
+		}
 		cfg, err := config.LoadConfig()
 		if err != nil {
 			return err
@@ -135,6 +133,9 @@ var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "Delete a task",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if verbose {
+			printVerboseInfo()
+		}
 		cfg, err := config.LoadConfig()
 		if err != nil {
 			return err
@@ -158,6 +159,9 @@ var clearAllCmd = &cobra.Command{
 	Use:   "clearAll",
 	Short: "Delete all tasks settings",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if verbose {
+			printVerboseInfo()
+		}
 		var confirm string
 		fmt.Print("Are you sure you want to delete all tasks and clear the config? (y/N): ")
 		fmt.Scanln(&confirm)
@@ -172,10 +176,14 @@ var clearAllCmd = &cobra.Command{
 		return nil
 	},
 }
+
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all tasks",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if verbose {
+			printVerboseInfo()
+		}
 		cfg, err := config.LoadConfig()
 		if err != nil {
 			return err
