@@ -11,6 +11,7 @@ import (
 
 	"kasher/internal/config"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -26,6 +27,31 @@ var rootCmd = &cobra.Command{
 		// If a subcommand was called, exit and let subcommand's handler run
 		if cmd.CalledAs() == "task" {
 			return nil
+		}
+		// If no args, prompt user to select a task interactively
+		if len(args) == 0 {
+			cfg, err := config.LoadConfig()
+			if err != nil {
+				return fmt.Errorf("failed to load config: %w", err)
+			}
+			if len(cfg) == 0 {
+				fmt.Println("No tasks found. Use 'kasher task create' to add one.")
+				return nil
+			}
+			var names []string
+			for name := range cfg {
+				names = append(names, name)
+			}
+			var selected string
+			prompt := &survey.Select{
+				Message:  "Select a task to run:",
+				Options:  names,
+				PageSize: 10,
+			}
+			if err := survey.AskOne(prompt, &selected); err != nil {
+				return err
+			}
+			args = []string{selected}
 		}
 		// Run a task by name
 		if len(args) > 0 {

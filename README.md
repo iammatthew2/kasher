@@ -15,12 +15,14 @@ Tasks are assigned an expiration (specify how many hours, minutes or seconds unt
 ## Features
 
 - Define named tasks that wrap shell commands
-- Cache task output for a set expiration time
+- Cache task output for a set expiration time (see [ParseDuration](https://pkg.go.dev/time#ParseDuration)
 - Interactive task definition flow via a set of commands to set up and modify tasks - see full list under **Task actions**
 
-## Basic usage
+## Usage
 
-You have a common request you run that takes a little too long or you want access to the response when you're offline (`aws s3 ls`, for example). The data is fairly static.
+### Basic
+
+Lets say you have a common request you run that takes a little too long or you want access to the response when you're offline (`aws s3 ls`, for example).
 
 Capture the shell command as a task:
 
@@ -28,9 +30,9 @@ Capture the shell command as a task:
 
 provide data at the prompts:
 
-- Name: myTask
-- Shell command: aws s3 ls 
-- Cache expiration: 48h (I could choose a larger number, but I want sort of fresh data)
+    Name: myTask
+    Shell command: aws s3 ls 
+    Expiration: 48h (see help for more time options)
 
 Now call this task as often as you need:
 
@@ -38,15 +40,18 @@ Now call this task as often as you need:
 
 Kasher will reduce the number of requests you make but will keep the data available to you.
 
-## Advanced usage
+### Fuzzy search for tasks
 
-Force the cache to refresh with `--force` (`-f`), no matter the expiration:
+Run `kasher` without any args to trigger the fuzzu search task finder: `$ kasher`
 
-`$ kasher myTask -f`
 
-Pass a shell command directly to kasher using `createFor`:
+### More options
 
-`$ kasher createFor cat README.md`
+Force the cache to refresh with `--force` (`-f`), no matter the expiration: `$ kasher myTask -f`
+
+Pass a shell command directly to kasher with *createFor: `$ kasher createFor cat README.md`
+
+View all saved tasks: `$ kasher task list`
 
 ## Available task actions
 
