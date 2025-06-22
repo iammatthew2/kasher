@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"kasher/internal/config"
@@ -100,6 +101,22 @@ func PromptTaskName(cfg config.KasherConfig, message string) (string, error) {
 	return selected, nil
 }
 
+// reservedTaskNames contains task names that are reserved and cannot be used by the user.
+var reservedTaskNames = map[string]struct{}{
+	"task": {},
+	"quit": {},
+	"q":    {},
+	"exit": {},
+	"?":    {},
+	"help": {},
+}
+
+// isReservedTaskName checks if a given name is reserved.
+func isReservedTaskName(name string) bool {
+	_, exists := reservedTaskNames[strings.ToLower(name)]
+	return exists
+}
+
 // PromptForTaskName interactively prompts for a new task name, ensuring it is not empty and not already in use.
 func PromptForTaskName(cfg config.KasherConfig, message string) (string, error) {
 	for {
@@ -113,11 +130,15 @@ func PromptForTaskName(cfg config.KasherConfig, message string) (string, error) 
 			return "", fmt.Errorf("user exited prompt")
 		}
 		if name == "?" || name == "help" {
-			fmt.Println("Enter a unique name for your new task. The name must not be empty or already in use. Spaces will be replaced with dashes.")
+			fmt.Println("Enter a unique name for your new task. The name must not be empty, reserved, or already in use. Spaces will be replaced with dashes.")
 			continue
 		}
 		if name == "" {
 			fmt.Println("Task name cannot be empty.")
+			continue
+		}
+		if isReservedTaskName(name) {
+			fmt.Println("That name is reserved and cannot be used. Please choose another name.")
 			continue
 		}
 		// Auto-replace spaces with dashes

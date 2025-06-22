@@ -65,6 +65,9 @@ var createCmd = &cobra.Command{
 		var taskName string
 		if len(args) > 0 {
 			taskName = args[0]
+			if isReservedTaskName(taskName) {
+				return fmt.Errorf("the name '%s' is reserved and cannot be used. Please choose another name", taskName)
+			}
 			if _, exists := cfg[taskName]; exists {
 				return fmt.Errorf("task '%s' already exists", taskName)
 			}

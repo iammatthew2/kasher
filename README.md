@@ -1,12 +1,12 @@
 # kasher
 
-**kasher** is a CLI tool for defining, running, and caching shell commands. This util is intended to reduce the wait time for simple fetch commands that are slow, rate-limited, or rarely change (getting Kubernetes pod info (`kubectl get pods`), for example)
+**Kasher** is a CLI tool for defining, running, and caching shell commands. This util is intended to reduce the wait time for simple fetch commands that are slow, rate-limited, or rarely change (getting Kubernetes pod info (`kubectl get pods`), for example)
 
-Kasher stores cachable shell commands as "tasks". All task actions (create, update, delete, ...) are available as subcommands of `task` (`kasher task list`, `kasher task help`, `kasher task create`)
+Kasher stores cachable shell commands as "tasks". All task actions (create, update, list, ...) are available as subcommands of `task` (`kasher task create`, `kasher task update`, `kasher task lists`)
 
-Once a task is stored it can be run directly on `kasher`, like so `kasher <taskNameHere>`
+Once a task is stored it can be run directly on `kasher`: `kasher <taskNameHere>`
 
-Tasks are assigned an expiration (specify how many hours, minutes or seconds until cache is stale). When a task is executed before the expiration is hit, the cache is used. When a task is executed after then a new request is maade.
+Tasks are assigned an expiration (specify how many hours, minutes or seconds until cache is stale). When a task is executed before the expiration is hit, the cache is used. When a task is executed after expiration is hit then a new request is maade.
 
 ## Instalation
 
@@ -48,8 +48,6 @@ Pass a shell command directly to kasher using `createFor`:
 
 `$ kasher createFor cat README.md`
 
-
-
 ## Available task actions
 
 - `kasher task create [name]` — interactively create a new task (optionally specify the name as an argument)
@@ -58,7 +56,6 @@ Pass a shell command directly to kasher using `createFor`:
 - `kasher task delete` — delete a task
 - `kasher task clearAll` — delete all tasks/settings
 - `kasher task list` — list all tasks
-- `kasher task debug` — debug output
 
 
 ## Dev
