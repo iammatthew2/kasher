@@ -11,10 +11,9 @@ import (
 )
 
 // PromptTaskDetails interactively asks the user for task details.
-func PromptTaskDetails(existing *config.TaskConfig) (config.TaskConfig, error) {
+func PromptTaskDetails(existing *config.TaskConfig, skipCommandPrompt bool) (config.TaskConfig, error) {
 	var task config.TaskConfig
-	// If Command is already set, skip the command prompt
-	if existing.Command != "" {
+	if skipCommandPrompt && existing.Command != "" {
 		task.Command = existing.Command
 	} else {
 		commandPrompt := &survey.Input{Message: "Shell command:", Default: existing.Command}

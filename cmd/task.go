@@ -82,7 +82,7 @@ var createCmd = &cobra.Command{
 				return fmt.Errorf("task '%s' already exists", taskName)
 			}
 		}
-		task, err := PromptTaskDetails(&config.TaskConfig{})
+		task, err := PromptTaskDetails(&config.TaskConfig{}, false)
 		if err != nil {
 			return err
 		}
@@ -113,7 +113,7 @@ var updateCmd = &cobra.Command{
 			return err
 		}
 		existing := cfg[taskName]
-		task, err := PromptTaskDetails(&existing)
+		task, err := PromptTaskDetails(&existing, false)
 		if err != nil {
 			return err
 		}
@@ -221,9 +221,12 @@ var createForCmd = &cobra.Command{
 		if _, exists := cfg[taskName]; exists {
 			return fmt.Errorf("task '%s' already exists", taskName)
 		}
+		if len(args) > 1 {
+			fmt.Println("Warning: It looks like you passed multiple arguments. If your command contains spaces, pipes, or shell operators (like &&), you should quote the command, e.g.:\n  kasher task createFor \"echo starting && sleep 5 && echo ending\"")
+		}
 		// Join all args as the shell command
 		shellCommand := strings.Join(args, " ")
-		task, err := PromptTaskDetails(&config.TaskConfig{Command: shellCommand})
+		task, err := PromptTaskDetails(&config.TaskConfig{Command: shellCommand}, true)
 		if err != nil {
 			return err
 		}

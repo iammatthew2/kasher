@@ -50,6 +50,9 @@ func LoadConfig() (KasherConfig, error) {
 	if err := toml.Unmarshal(data, &cfg); err != nil {
 		return nil, err
 	}
+	if cfg == nil {
+		cfg = make(KasherConfig)
+	}
 	return cfg, nil
 }
 
