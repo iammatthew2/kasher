@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"kasher/internal/config"
@@ -192,7 +193,16 @@ var listCmd = &cobra.Command{
 			return nil
 		}
 		fmt.Println("Tasks:")
-		for name, task := range cfg {
+
+		// Get sorted task names for consistent ordering
+		var names []string
+		for name := range cfg {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+
+		for _, name := range names {
+			task := cfg[name]
 			fmt.Printf("- %s: %s (expires: %s)\n", name, task.Command, task.Expiration)
 			if task.Notes != "" {
 				fmt.Printf("    Notes: %s\n", task.Notes)

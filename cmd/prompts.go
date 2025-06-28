@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 
@@ -89,6 +90,7 @@ func PromptTaskName(cfg config.KasherConfig, message string) (string, error) {
 	for name := range cfg {
 		names = append(names, name)
 	}
+	sort.Strings(names)
 	var selected string
 	prompt := &survey.Select{
 		Message: message,

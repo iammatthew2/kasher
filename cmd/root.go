@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"time"
 
 	"kasher/internal/config"
@@ -42,6 +43,7 @@ var rootCmd = &cobra.Command{
 			for name := range cfg {
 				names = append(names, name)
 			}
+			sort.Strings(names)
 			var selected string
 			prompt := &survey.Select{
 				Message:  "Select a task to run:",
