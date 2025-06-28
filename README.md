@@ -8,9 +8,22 @@ Once a task is stored it can be run directly on *kasher*: `kasher <taskNameHere>
 
 Tasks are assigned an expiration (specify how many hours, minutes or seconds until cache is stale). When a task is executed before the expiration is hit, the cache is used. When a task is executed after expiration is hit then a new request is made and cached.
 
+![kasher](https://github.com/user-attachments/assets/e7bcd84e-79a6-46ef-b994-d783a9d20d84)
+
+
 ## Installation
 
-See latest release in [releases](https://github.com/iammatthew2/kasher/releases) for installation instructions
+### Brew install
+
+```
+brew tap iammatthew2/kasher
+brew install kasher
+```
+> [!NOTE]
+> The above tap links to https://github.com/iammatthew2/homebrew-kasher/, which links back here to Kasher
+
+### Alternatives
+See latest release in [releases](https://github.com/iammatthew2/kasher/releases) for direct installation instructions
 
 
 ## Features
