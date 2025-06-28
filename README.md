@@ -10,7 +10,8 @@ Tasks are assigned an expiration (specify how many hours, minutes or seconds unt
 
 ## Installation
 
-- tbd
+See latest release in [releases](https://github.com/iammatthew2/kasher/releases) for installation instructions
+
 
 ## Features
 
