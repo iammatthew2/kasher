@@ -18,6 +18,7 @@ import (
 
 var forceRefresh bool
 var verbose bool
+var clearTimestamp bool
 
 var rootCmd = &cobra.Command{
 	Use:   "kasher [taskName]",
@@ -82,6 +83,19 @@ var rootCmd = &cobra.Command{
 				}
 			}
 
+			// Clear timestamp if requested (forces refresh on next execution)
+			if clearTimestamp {
+				task.LastFetched = ""
+				cfg[taskName] = task
+				if err := config.SaveConfig(cfg); err != nil {
+					fmt.Fprintf(os.Stderr, "Warning: Failed to save cleared timestamp: %v\n", err)
+				}
+				if verbose {
+					fmt.Printf("Cleared last fetch timestamp for task '%s'. Next execution will refresh cache.\n", taskName)
+				}
+				return nil
+			}
+
 			// Check cache validity, skip if forceRefresh is set
 			cacheValid := false
 			if !forceRefresh && task.LastFetched != "" && task.Expiration != "" {
@@ -144,5 +158,6 @@ func init() {
 	rootCmd.AddCommand(taskCmd)
 	rootCmd.SuggestionsMinimumDistance = 2
 	rootCmd.PersistentFlags().BoolVarP(&forceRefresh, "force", "f", false, "Force refresh of cached task output")
+	rootCmd.PersistentFlags().BoolVarP(&clearTimestamp, "clear-timestamp", "c", false, "Clear last fetch timestamp to force refresh on next execution")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "Show extra information")
 }

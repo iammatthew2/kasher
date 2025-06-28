@@ -59,10 +59,14 @@ Run `kasher` without any args to trigger the fuzzy search task finder: `$ kasher
 
 ### Available task actions
 
+> [!NOTE]
+>`$ kasher task` to view this list
+
 - `kasher task create [name]` — interactively create a new task (optionally specify the name as an argument)
 - `kasher task createFor <command>` — create a new task for a given shell command (provide the command as arguments):
 
-  `$ kasher createFor "echo starting && sleep 5 && echo ending"`
+      $ kasher createFor "echo starting && sleep 5 && echo ending"
+
 - `kasher task update` — update an existing task
 - `kasher task delete` — delete a task
 - `kasher task clearAll` — delete all tasks/settings
@@ -70,7 +74,9 @@ Run `kasher` without any args to trigger the fuzzy search task finder: `$ kasher
 
 ### Flags
 
-`--force` (`-f`), Force the cache to refresh, no matter the expiration: `$ kasher myTask -f`. This will execute the task immediately and cache its response.
+- `--force` (`-f`) — Force the cache to refresh, no matter the expiration: `$ kasher myTask -f`. This will execute the task immediately and cache its response.
+
+- `--clear-timestamp` (`-c`) — Clear last fetch timestamp for task. This will trigger a cache refresh on next execution of the given task.
 
 
 ## Dev
