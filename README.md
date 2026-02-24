@@ -2,7 +2,7 @@
 
 **Kasher** is a CLI tool for defining and running shell commands and caching their responses. It’s designed to reduce wait times for simple fetch commands that are slow, rate-limited, or rarely change—such as retrieving Kubernetes pod info (`kubectl get pods`).
 
-Kasher stores cachcacheable able shell commands as "tasks". All task actions (create, update, list, ...) are available as subcommands of *task* (`kasher task create`, `kasher task update`, `kasher task list`, ...)
+Kasher stores cachcacheable shell commands as "tasks". All task actions (create, update, list, ...) are available as subcommands of *task* (`kasher task create`, `kasher task update`, `kasher task list`, ...)
 
 Once a task is stored it can be run directly on *kasher*: `kasher <taskNameHere>`
 
